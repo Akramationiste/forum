@@ -6,26 +6,26 @@ const bcrypt = require("bcrypt")
 
 ///////////////////////////////////
 const generateToken = (data) => {
-  const token = jwt.sign(data, process.env.ACCESS_TOKEN, { expiresIn: "30m" })
-  return token
+  const jeton = jwt.sign(data, process.env.ACCESS_TOKEN, { expiresIn: "30m" })
+  return jeton
 }
 
 ///////////////////////////////////
 exports.Login = expressAsyncHandler(async (req, res) => {
   try {
-    const { mail, mot_de_passe } = req.body
-    if (!mail || !mot_de_passe) {
+    const { email, password } = req.body
+    if (!email || !password) {
       res.status(400)
       throw new Error("Empty fields!")
     }
-    const userExist = await UserModel.find({ mail: mail })
+    const userExist = await UserModel.find({ email: email })
     if (userExist.length == 0) {
       res.status(400)
       throw new Error("User doesn't exist!")
     }
     const matchPassword = await bcrypt.compare(
-      mot_de_passe,
-      userExist[0].mot_de_passe
+      password,
+      userExist[0].password
     )
     if (!matchPassword) {
       res.status(400)
@@ -39,10 +39,10 @@ exports.Login = expressAsyncHandler(async (req, res) => {
       { _id: userExist[0]._id, role: userExist[0].role },
       process.env.REFRESH_TOKEN
     )
-    await RefreshTokenModel.create({ userId: userExist[0]._id, refreshToken })
+    await Refjetons.create({ userId: userExist[0]._id, refreshToken })
     res.status(200).json({
       _id: userExist[0]._id,
-      mail: userExist[0].mail,
+      email: userExist[0].email,
       role: userExist[0].role,
       accessToken,
       refreshToken,
